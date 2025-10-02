@@ -136,5 +136,81 @@ app.put("/api/admin-profile/:id", async (req, res) => {
 	}
 });
 
+// Delete Admin
+app.delete("/api/delete-admin/:id", async (req, res) => {
+	try {
+		const { id } = req.params;
+		const [result] = await pool.execute("DELETE FROM admin WHERE id = ?", [
+			id,
+		]);
+		return res.json({ success: true, affectedRows: result.affectedRows });
+	} catch (err) {
+		console.error(err);
+		return res.status(500).json({ error: "Server error" });
+	}
+});
+
+// TOOL KIT API'S HERE
+// Add Toolkit
+app.post("/api/add-toolkit", async (req, res) => {
+	try {
+		const { name, toolkiturl } = req.body;
+
+		const [result] = await pool.execute(
+			"INSERT INTO toolkits (toolkit_name, toolkit_image) VALUES (?, ?)",
+			[name, toolkiturl]
+		);
+		return res.status(201).json({ success: true, id: result.insertId });
+	} catch (err) {
+		console.error(err);
+		return res.status(500).json({ error: "Server error" });
+	}
+});
+
+// Get Toolkits
+app.get("/api/toolits", async (req, res) => {
+	try {
+		const [rows] = await pool.execute(
+			"SELECT * FROM toolkits ORDER BY id DESC"
+		);
+		return res.json(rows);
+	} catch (err) {
+		console.error(err);
+		return res.status(500).json({ error: "Server error" });
+	}
+});
+
+// Edit Toolkit Information
+app.put("/api/edit-toolkit", async (req, res) => {
+	try {
+		const { id, name, toolkiturl } = req.body;
+		const [result] = await pool.execute(
+			"UPDATE toolkits SET toolkit_name = ?, toolkit_image = ? WHERE id = ?",
+			[name, toolkiturl, id]
+		);
+		return res.json({ success: true, changedRows: result.affectedRows });
+	} catch (err) {
+		console.error(err);
+		return res.status(500).json({ error: "Server error" });
+	}
+});
+
+// Delete Toolkit
+app.delete("/api/delete-toolkit/:id", async (req, res) => {
+	try {
+		const { id } = req.params;
+		console.log(id);
+		const [result] = await pool.execute(
+			"DELETE FROM toolkits WHERE id = ?",
+			[id]
+		);
+
+		return res.json({ success: true, affectedRows: result.affectedRows });
+	} catch (err) {
+		console.error(err);
+		return res.status(500).json({ error: "Server error" });
+	}
+});
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on ${PORT}`));
