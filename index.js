@@ -171,7 +171,7 @@ app.post("/api/add-toolkit", async (req, res) => {
 app.get("/api/toolits", async (req, res) => {
 	try {
 		const [rows] = await pool.execute(
-			"SELECT * FROM toolkits ORDER BY id DESC"
+			"SELECT * FROM toolkits ORDER BY id DESC LIMIT 20"
 		);
 		return res.json(rows);
 	} catch (err) {
@@ -202,6 +202,92 @@ app.delete("/api/delete-toolkit/:id", async (req, res) => {
 		console.log(id);
 		const [result] = await pool.execute(
 			"DELETE FROM toolkits WHERE id = ?",
+			[id]
+		);
+
+		return res.json({ success: true, affectedRows: result.affectedRows });
+	} catch (err) {
+		console.error(err);
+		return res.status(500).json({ error: "Server error" });
+	}
+});
+
+// Portfolio API's
+// Add Portfolio
+app.post("/api/add-portfolio", async (req, res) => {
+	try {
+		const {
+			name,
+			liveUrl,
+			technologies,
+			catagories,
+			thumbnailUrl,
+			fullPageUrl,
+		} = req.body;
+
+		const [result] = await pool.execute(
+			"INSERT INTO portfolios (name, live_link, technologies, catagoryes,thumbnail, full_picture) VALUES (?, ?, ?, ?, ?, ?)",
+			[name, liveUrl, technologies, catagories, thumbnailUrl, fullPageUrl]
+		);
+		return res.status(201).json({ success: true, id: result.insertId });
+	} catch (error) {
+		console.log(error);
+		return res.status(500).json({ error: "Server error" });
+	}
+});
+
+// Get Portfolio
+app.get("/api/portfolios", async (req, res) => {
+	try {
+		const [rows] = await pool.execute(
+			"SELECT * FROM portfolios ORDER BY id DESC LIMIT 20"
+		);
+		return res.json(rows);
+	} catch (err) {
+		console.error(err);
+		return res.status(500).json({ error: "Server error" });
+	}
+});
+
+// Update Portfolio
+app.put("/api/update-portfolio", async (req, res) => {
+	try {
+		const {
+			id,
+			name,
+			liveUrl,
+			technologies,
+			catagories,
+			thumbnailUrl,
+			fullPageUrl,
+		} = req.body;
+
+		const [result] = await pool.execute(
+			"UPDATE portfolios SET name = ?, live_link = ?, technologies = ?, catagoryes = ?, thumbnail = ?, full_picture= ?  WHERE id = ?",
+			[
+				name,
+				liveUrl,
+				technologies,
+				catagories,
+				thumbnailUrl,
+				fullPageUrl,
+				id,
+			]
+		);
+		return res.json({ success: true, changedRows: result.affectedRows });
+	} catch (err) {
+		console.log(err);
+		return res.status(500).json({ error: "Server error" });
+	}
+});
+
+// Delete Portfolio
+app.delete("/api/portfolios/:id", async (req, res) => {
+	try {
+		const { id } = req.params;
+
+		const [result] = await pool.execute(
+			"DELETE FROM portfolios WHERE id = ?",
 			[id]
 		);
 
