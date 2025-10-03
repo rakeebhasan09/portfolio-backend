@@ -298,5 +298,65 @@ app.delete("/api/portfolios/:id", async (req, res) => {
 	}
 });
 
+// Recent Project's API's
+// Add Recent Projects
+app.post("/api/add-recent-project", async (req, res) => {
+	try {
+		const { name, liveUrl, thumnailUrl, fullPageUrl } = req.body;
+		const [result] = await pool.execute(
+			"INSERT INTO recent_projects (name,url,thumbnail,full_image) VALUES	 (?,?,?,?)",
+			[name, liveUrl, thumnailUrl, fullPageUrl]
+		);
+		return res.status(201).json({ success: true, id: result.insertId });
+	} catch (err) {
+		console.log(err);
+		return res.status(500).json({ error: "Server error" });
+	}
+});
+
+// Get Recent Projects
+app.get("/api/recent-projects", async (req, res) => {
+	try {
+		const [rows] = await pool.execute(
+			"SELECT * FROM recent_projects ORDER BY id DESC"
+		);
+		return res.json(rows);
+	} catch (err) {
+		console.log(err);
+		return res.status(500).json({ error: "Server error" });
+	}
+});
+
+// Update Recent Project
+app.put("/api/update-recent-project", async (req, res) => {
+	try {
+		const { id, name, liveUrl, thumbnailUrl, fullPageUrl } = req.body;
+		const [result] = await pool.execute(
+			"UPDATE recent_projects SET name = ?, url = ?, thumbnail = ?, full_image = ? WHERE id = ?",
+			[name, liveUrl, thumbnailUrl, fullPageUrl, id]
+		);
+		return res.json({ success: true, changedRows: result.affectedRows });
+	} catch (err) {
+		console.log(err);
+		return res.status(500).json({ error: "Server error" });
+	}
+});
+
+// Delete Recent Project
+app.delete("/api/delete-recent-project/:id", async (req, res) => {
+	try {
+		const { id } = req.params;
+		const [result] = await pool.execute(
+			"DELETE FROM recent_projects WHERE id = ?",
+			[id]
+		);
+
+		return res.json({ success: true, affectedRows: result.affectedRows });
+	} catch (error) {
+		console.log(err);
+		return res.status(500).json({ error: "Server error" });
+	}
+});
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on ${PORT}`));
